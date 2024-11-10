@@ -85,12 +85,15 @@ void OdomCb(const nav_msgs::Odometry::ConstPtr& msg){
     t_start = std::chrono::high_resolution_clock::now();
     // Prediction phase
     if(!init_odom){
-        pf.prediction(0, sigma_pos, odom.velocity, odom.yawrate);
         std::cout << "in init odom, first prediction" << std::endl;
+        pf.prediction(0, sigma_pos, odom.velocity, odom.yawrate);
+        std::cout << "predicted" << std::endl;
         init_odom=true;
     }else{
         //double delta_t = t_start-t_end;
         double delta_t = (std::chrono::duration<double, std::milli>(t_start-t_end).count())/1000;
+
+        std::cout << "starting prediction" << std::endl;
         pf.prediction(delta_t, sigma_pos, odom.velocity, odom.yawrate);
         std::cout << "predicted" << std::endl;
     }
@@ -130,10 +133,12 @@ void PointCloudCb(const sensor_msgs::PointCloud2ConstPtr& cloud_msg){
     }
 
     // Update the weights of the particle 
+    std::cout << "updating weights" << std::endl;
     pf.updateWeights(sigma_landmark, noisy_observations, map_mille);
     std::cout << "updated weights" << std::endl;
 
     // Resample the particles
+    std::cout << "resampling" << std::endl;
     pf.resample();
     std::cout << "resampled" << std::endl;
 

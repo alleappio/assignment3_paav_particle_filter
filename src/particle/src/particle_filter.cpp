@@ -182,25 +182,32 @@ void ParticleFilter::resample() {
     double beta  = 0.0;
     vector<double> weights;
     int index = dist_distribution(generator);
-    vector<Particle> new_particles;
+    std::vector<Particle> new_particles;
 
     for(int i=0;i<num_particles;i++)
         weights.push_back(particles[i].weight);
 																
     float max_w = *max_element(weights.begin(), weights.end());
     uniform_real_distribution<double> uni_dist(0.0, max_w);
+    uniform_real_distribution<double> uni_dist_wheel(0.0, 2*max_w);
 
     //TODO write here the resampling technique (feel free to use the above variables)
-    for(int i=0; i < num_particles; i++){
-      beta = beta + generator() * 2 * max_w;
+    std::cout << "particles size:" << particles.size() << std::endl;
+    for(int i=0; i < particles.size(); i++){
+      double generated = uni_dist_wheel(generator);
+      std::cout << generated << std::endl;
+      beta = beta + generated;
       while(weights[index] < beta){
         beta = beta - weights[index];
-        index = (index + 1) % num_particles;
+        index = (index + 1) % particles.size();
       }
+      std::cout << "new index:" << index << std::endl;
+      std::cout << "particles[" << index << "].x:" << particles[index].x << std::endl;
+      Particle new_particle = particles[index];
       new_particles.push_back(particles[index]);
+      std::cout << "push_back " << index << std::endl;
     }
-    
-    particles=new_particles;
+    particles.swap(new_particles);
 }
 
 
