@@ -75,6 +75,7 @@ void updateViewerReflector(pcl::PointCloud<pcl::PointXYZI> reflectorCenter){
 
 // This functions processes the odometry from the forklift (Prediction phase)
 void OdomCb(const nav_msgs::Odometry::ConstPtr& msg){
+    std::cout << "in odom cb" << std::endl;
     //static double t_start=0.0, t_end=0.0;
     static std::chrono::time_point<std::chrono::high_resolution_clock> t_start ;
     static std::chrono::time_point<std::chrono::high_resolution_clock> t_end ;
@@ -85,11 +86,13 @@ void OdomCb(const nav_msgs::Odometry::ConstPtr& msg){
     // Prediction phase
     if(!init_odom){
         pf.prediction(0, sigma_pos, odom.velocity, odom.yawrate);
+        std::cout << "in init odom, first prediction" << std::endl;
         init_odom=true;
     }else{
         //double delta_t = t_start-t_end;
         double delta_t = (std::chrono::duration<double, std::milli>(t_start-t_end).count())/1000;
         pf.prediction(delta_t, sigma_pos, odom.velocity, odom.yawrate);
+        std::cout << "predicted" << std::endl;
     }
 
     t_end = std::chrono::high_resolution_clock::now();
@@ -97,7 +100,7 @@ void OdomCb(const nav_msgs::Odometry::ConstPtr& msg){
 
 // This functions processes the point cloud (Update phase)
 void PointCloudCb(const sensor_msgs::PointCloud2ConstPtr& cloud_msg){
-
+    std::cout << "in pointcloud cb" << std::endl;
     // Define the timers for loggin the execution time
     static std::chrono::time_point<std::chrono::high_resolution_clock> t_start, t_end ;
     t_start = std::chrono::high_resolution_clock::now();
@@ -128,9 +131,11 @@ void PointCloudCb(const sensor_msgs::PointCloud2ConstPtr& cloud_msg){
 
     // Update the weights of the particle 
     pf.updateWeights(sigma_landmark, noisy_observations, map_mille);
+    std::cout << "updated weights" << std::endl;
 
     // Resample the particles
     pf.resample();
+    std::cout << "resampled" << std::endl;
 
     // Calculate and output the average weighted error of the particle filter over all time steps so far.
     Particle best_particle;

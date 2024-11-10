@@ -29,7 +29,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[],int nPa
   normal_distribution<double> dist_theta(-std[2], std[2]);
 //TODO
   for(int i=0; i < num_particles; i++){
-    particles[i] = Particle(dist_x(generator), dist_y(generator), dist_theta(generator)); 
+    particles.push_back(Particle(dist_x(generator), dist_y(generator), dist_theta(generator))); 
   }
   is_initialized=true;
 }
