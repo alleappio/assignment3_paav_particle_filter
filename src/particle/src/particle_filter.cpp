@@ -181,7 +181,7 @@ void ParticleFilter::resample() {
     uniform_int_distribution<int> dist_distribution(0,num_particles-1);
     double beta  = 0.0;
     vector<double> weights;
-    int index = dist_distribution(gen);
+    int index = dist_distribution(generator);
     vector<Particle> new_particles;
 
     for(int i=0;i<num_particles;i++)
@@ -191,6 +191,16 @@ void ParticleFilter::resample() {
     uniform_real_distribution<double> uni_dist(0.0, max_w);
 
     //TODO write here the resampling technique (feel free to use the above variables)
+    for(int i=0; i < num_particles; i++){
+      beta = beta + generator() * 2 * max_w;
+      while(weights[index] < beta){
+        beta = beta - weights[index];
+        index = (index + 1) % num_particles;
+      }
+      new_particles.push_back(particles[index]);
+    }
+    
+    particles=new_particles;
 }
 
 
