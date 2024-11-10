@@ -1,6 +1,15 @@
 #ifndef PARTICLE_FILTER_H_
 #define PARTICLE_FILTER_H_
 
+#include <random>
+#include <algorithm>
+#include <iostream>
+#include <numeric>
+#include <math.h> 
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <iterator>
 #include "particle/helper_functions.h"
 
 struct Particle {
@@ -30,6 +39,9 @@ class ParticleFilter {
 	
 	// Vector of weights of all particles
 	std::vector<double> weights;
+
+  // random number generator
+  std::default_random_engine generator;
 	
 public:
 	

@@ -1,12 +1,3 @@
-#include <random>
-#include <algorithm>
-#include <iostream>
-#include <numeric>
-#include <math.h> 
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <iterator>
 #include "particle/particle_filter.h"
 using namespace std;
 
@@ -32,14 +23,15 @@ void ParticleFilter::init_random(double std[],int nParticles) {
 *  nParticles - number of particles
 */ 
 void ParticleFilter::init(double x, double y, double theta, double std[],int nParticles) {
-    num_particles = nParticles;
-    normal_distribution<double> dist_x(-std[0], std[0]); //random value between [-noise.x,+noise.x]
-    normal_distribution<double> dist_y(-std[1], std[1]);
-    normal_distribution<double> dist_theta(-std[2], std[2]);
-
-	//TODO
-    
-    is_initialized=true;
+  num_particles = nParticles;
+  normal_distribution<double> dist_x(-std[0], std[0]); //random value between [-noise.x,+noise.x]
+  normal_distribution<double> dist_y(-std[1], std[1]);
+  normal_distribution<double> dist_theta(-std[2], std[2]);
+//TODO
+  for(int i=0; i < num_particles; i++){
+    particles[i] = Particle(dist_x(generator), dist_y(generator), dist_theta(generator)); 
+  }
+  is_initialized=true;
 }
 
 /*
@@ -55,18 +47,25 @@ void ParticleFilter::init(double x, double y, double theta, double std[],int nPa
 */
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
     //for each particle
+    for(int i=0; i < num_particles; i++){
         double x,y,theta;
         if (fabs(yaw_rate) < 0.00001) {
-            //TODO
+            particles[i].x = particles[i].x+velocity*std::cos(yaw_rate);
+            particles[i].y = particles[i].y+velocity*std::sin(yaw_rate);
+            particles[i].theta = particles[i].theta;
         }else{ 
-            //TODO
-
+            particles[i].x = particles[i].x+(velocity/yaw_rate)*(std::sin(particles[i].theta+yaw_rate)-std::sin(particles[i].theta));
+            particles[i].y = particles[i].y+(velocity/yaw_rate)*(std::cos(particles[i].theta+yaw_rate)-std::cos(particles[i].theta));
+            particles[i].theta = particles[i].theta+yaw_rate;
         }   
-        normal_distribution<double> dist_x(0, std_pos[0]); //the random noise cannot be negative in this case
-        normal_distribution<double> dist_y(0, std_pos[1]);
-        normal_distribution<double> dist_theta(0, std_pos[2]);
+        normal_distribution<double> dist_x(-std_pos[0], std_pos[0]); //the random noise cannot be negative in this case
+        normal_distribution<double> dist_y(-std_pos[1], std_pos[1]); //the random noise cannot be negative in this case
+        normal_distribution<double> dist_theta(-std_pos[2], std_pos[2]); //the random noise cannot be negative in this case
         //TODO: add the computed noise to the current particles position (x,y,theta)
-
+        particles[i].x = particles[i].x+dist_x(generator);
+        particles[i].y = particles[i].y+dist_y(generator);
+        particles[i].theta = particles[i].theta+dist_theta(generator);
+    }
 	//}
 }
 
@@ -82,7 +81,25 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> mapLandmark, std::vector<LandmarkObs>& observations) {
    //TODO
    //TIP: Assign to observations[i].id the id of the landmark with the smallest euclidean distance
+  for(int i=0; i<observations.size(); i++){
+    double min_dist;
+    int min_dist_id;
+    for(int j=0; j<mapLandmark.size(); j++){
+      double dist = std::hypot(mapLandmark[j].x-observations[i].x,mapLandmark[j].y-observations[i].y);
 
+      if(j == 0){
+        min_dist = dist;
+        min_dist_id=mapLandmark[i].id;
+      }else{
+        if(min_dist>dist){
+          min_dist=dist;
+          min_dist_id=mapLandmark[i].id;
+        }
+      }
+
+    }
+    observations[i].id = min_dist_id;
+  }
 }
 
 /*
@@ -98,8 +115,8 @@ LandmarkObs transformation(LandmarkObs observation, Particle p){
     LandmarkObs global;
     
     global.id = observation.id;
-    global.x = -1; //TODO
-    global.y = -1; //TODO
+    global.x = observation.x*std::cos(p.theta)-observation.y*std::sin(p.theta)+p.x; //TODO
+    global.x = observation.x*std::sin(p.theta)-observation.y*std::cos(p.theta)+p.y; //TODO
 
     return global;
 }
@@ -127,8 +144,10 @@ void ParticleFilter::updateWeights(double std_landmark[],
         // Before applying the association we have to transform the observations in the global coordinates
         std::vector<LandmarkObs> transformed_observations;
         //TODO: for each observation transform it (transformation function)
+        observations[i] = transformation(observations[i], particles[i]);
         
         //TODO: perform the data association (associate the landmarks to the observations)
+        dataAssociation(mapLandmark, observations);
         
         particles[i].weight = 1.0;
         // Compute the probability
