@@ -51,21 +51,21 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
     for(int i=0; i < num_particles; i++){
         double x,y,theta;
         if (fabs(yaw_rate) < 0.00001) {
-            particles[i].x = particles[i].x+velocity*std::cos(yaw_rate);
-            particles[i].y = particles[i].y+velocity*std::sin(yaw_rate);
-            particles[i].theta = particles[i].theta;
+            x = particles[i].x+velocity*std::cos(yaw_rate);
+            y = particles[i].y+velocity*std::sin(yaw_rate);
+            theta = particles[i].theta;
         }else{ 
-            particles[i].x = particles[i].x+(velocity/yaw_rate)*(std::sin(particles[i].theta+yaw_rate)-std::sin(particles[i].theta));
-            particles[i].y = particles[i].y+(velocity/yaw_rate)*(std::cos(particles[i].theta+yaw_rate)-std::cos(particles[i].theta));
-            particles[i].theta = particles[i].theta+yaw_rate;
+            x = particles[i].x+(velocity/yaw_rate)*(std::sin(particles[i].theta+yaw_rate)-std::sin(particles[i].theta));
+            y = particles[i].y+(velocity/yaw_rate)*(std::cos(particles[i].theta+yaw_rate)-std::cos(particles[i].theta));
+            theta = particles[i].theta+yaw_rate;
         }   
-        std::normal_distribution<double> dist_x(-std_pos[0], std_pos[0]); //the random noise cannot be negative in this case
-        std::normal_distribution<double> dist_y(-std_pos[1], std_pos[1]); //the random noise cannot be negative in this case
-        std::normal_distribution<double> dist_theta(-std_pos[2], std_pos[2]); //the random noise cannot be negative in this case
+        std::normal_distribution<double> dist_x(0, std_pos[0]); //the random noise cannot be negative in this case
+        std::normal_distribution<double> dist_y(0, std_pos[1]); //the random noise cannot be negative in this case
+        std::normal_distribution<double> dist_theta(0, std_pos[2]); //the random noise cannot be negative in this case
         //TODO: add the computed noise to the current particles position (x,y,theta)
-        particles[i].x = particles[i].x+dist_x(generator);
-        particles[i].y = particles[i].y+dist_y(generator);
-        particles[i].theta = particles[i].theta+dist_theta(generator);
+        particles[i].x = x+dist_x(generator);
+        particles[i].y = y+dist_y(generator);
+        particles[i].theta = theta+dist_theta(generator);
     }
 	//}
 }
