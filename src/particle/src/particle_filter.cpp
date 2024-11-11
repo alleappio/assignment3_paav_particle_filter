@@ -1,4 +1,5 @@
 #include "particle/particle_filter.h"
+#include <limits>
 //using namespace std;
 
 static  std::default_random_engine gen;
@@ -82,20 +83,15 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> mapLandmark, std::
    //TODO
    //TIP: Assign to observations[i].id the id of the landmark with the smallest euclidean distance
   for(int i=0; i<observations.size(); i++){
-    double min_dist;
+    double min_dist = std::numeric_limits<int>::max();
     int min_dist_id;
     for(int j=0; j<mapLandmark.size(); j++){
       double dist = std::hypot(mapLandmark[j].x-observations[i].x,mapLandmark[j].y-observations[i].y);
 
-      if(j == 0){
-        min_dist = dist;
-        min_dist_id=mapLandmark[i].id;
-      }else{
         if(min_dist>dist){
           min_dist=dist;
           min_dist_id=mapLandmark[i].id;
         }
-      }
 
     }
     observations[i].id = min_dist_id;

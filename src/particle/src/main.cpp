@@ -14,7 +14,7 @@
 * TODO
 * Define the proper number of particles
 */
-#define NPARTICLES 500
+#define NPARTICLES 10000
 #define circleID "circle_id"
 #define reflectorID "reflector_id"
 
