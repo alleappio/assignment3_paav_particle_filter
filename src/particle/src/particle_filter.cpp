@@ -1,7 +1,7 @@
 #include "particle/particle_filter.h"
-using namespace std;
+//using namespace std;
 
-static  default_random_engine gen;
+static  std::default_random_engine gen;
 
 /*
 * TODO
@@ -24,9 +24,9 @@ void ParticleFilter::init_random(double std[],int nParticles) {
 */ 
 void ParticleFilter::init(double x, double y, double theta, double std[],int nParticles) {
   num_particles = nParticles;
-  normal_distribution<double> dist_x(-std[0], std[0]); //random value between [-noise.x,+noise.x]
-  normal_distribution<double> dist_y(-std[1], std[1]);
-  normal_distribution<double> dist_theta(-std[2], std[2]);
+  std::normal_distribution<double> dist_x(-std[0], std[0]); //random value between [-noise.x,+noise.x]
+  std::normal_distribution<double> dist_y(-std[1], std[1]);
+  std::normal_distribution<double> dist_theta(-std[2], std[2]);
 //TODO
   for(int i=0; i < num_particles; i++){
     particles.push_back(Particle(dist_x(generator), dist_y(generator), dist_theta(generator))); 
@@ -58,9 +58,9 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
             particles[i].y = particles[i].y+(velocity/yaw_rate)*(std::cos(particles[i].theta+yaw_rate)-std::cos(particles[i].theta));
             particles[i].theta = particles[i].theta+yaw_rate;
         }   
-        normal_distribution<double> dist_x(-std_pos[0], std_pos[0]); //the random noise cannot be negative in this case
-        normal_distribution<double> dist_y(-std_pos[1], std_pos[1]); //the random noise cannot be negative in this case
-        normal_distribution<double> dist_theta(-std_pos[2], std_pos[2]); //the random noise cannot be negative in this case
+        std::normal_distribution<double> dist_x(-std_pos[0], std_pos[0]); //the random noise cannot be negative in this case
+        std::normal_distribution<double> dist_y(-std_pos[1], std_pos[1]); //the random noise cannot be negative in this case
+        std::normal_distribution<double> dist_theta(-std_pos[2], std_pos[2]); //the random noise cannot be negative in this case
         //TODO: add the computed noise to the current particles position (x,y,theta)
         particles[i].x = particles[i].x+dist_x(generator);
         particles[i].y = particles[i].y+dist_y(generator);
@@ -144,10 +144,10 @@ void ParticleFilter::updateWeights(double std_landmark[],
         // Before applying the association we have to transform the observations in the global coordinates
         std::vector<LandmarkObs> transformed_observations;
         //TODO: for each observation transform it (transformation function)
-        observations[i] = transformation(observations[i], particles[i]);
+        transformed_observations.push_back(transformation(observations[i], particles[i]));
         
         //TODO: perform the data association (associate the landmarks to the observations)
-        dataAssociation(mapLandmark, observations);
+        dataAssociation(mapLandmark, transformed_observations);
         
         particles[i].weight = 1.0;
         // Compute the probability
@@ -165,7 +165,7 @@ void ParticleFilter::updateWeights(double std_landmark[],
                 }
             }	
 			// How likely a set of landmarks measurements are, given a prediction state of the car 
-            double w = exp( -( pow(l_x-obs_x,2)/(2*pow(std_landmark[0],2)) + pow(l_y-obs_y,2)/(2*pow(std_landmark[1],2)) ) ) / ( 2*M_PI*std_landmark[0]*std_landmark[1] );
+            double w = std::exp( -( std::pow(l_x-obs_x,2)/(2*std::pow(std_landmark[0],2)) + std::pow(l_y-obs_y,2)/(2*std::pow(std_landmark[1],2)) ) ) / ( 2*M_PI*std_landmark[0]*std_landmark[1] );
             particles[i].weight *= w;
         }
 
@@ -178,9 +178,9 @@ void ParticleFilter::updateWeights(double std_landmark[],
 */
 void ParticleFilter::resample() {
     
-    uniform_int_distribution<int> dist_distribution(0,num_particles-1);
+    std::uniform_int_distribution<int> dist_distribution(0,num_particles-1);
     double beta  = 0.0;
-    vector<double> weights;
+    std::vector<double> weights;
     int index = dist_distribution(generator);
     std::vector<Particle> new_particles;
 
@@ -188,26 +188,18 @@ void ParticleFilter::resample() {
         weights.push_back(particles[i].weight);
 																
     float max_w = *max_element(weights.begin(), weights.end());
-    uniform_real_distribution<double> uni_dist(0.0, max_w);
-    uniform_real_distribution<double> uni_dist_wheel(0.0, 2*max_w);
+    std::uniform_real_distribution<double> uni_dist(0.0, max_w);
+    std::uniform_real_distribution<double> uni_dist_wheel(0.0, 2*max_w);
 
     //TODO write here the resampling technique (feel free to use the above variables)
-    std::cout << "particles size:" << particles.size() << std::endl;
     for(int i=0; i < particles.size(); i++){
-      double generated = uni_dist_wheel(generator);
-      std::cout << generated << std::endl;
-      beta = beta + generated;
+      beta += uni_dist(generator)*2;
       while(weights[index] < beta){
-        beta = beta - weights[index];
+        beta -= weights[index];
         index = (index + 1) % particles.size();
       }
-      std::cout << "new index:" << index << std::endl;
-      std::cout << "particles[" << index << "].x:" << particles[index].x << std::endl;
-      Particle new_particle = particles[index];
       new_particles.push_back(particles[index]);
-      std::cout << "push_back " << index << std::endl;
     }
     particles.swap(new_particles);
 }
-
 
