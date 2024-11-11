@@ -51,13 +51,13 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
     for(int i=0; i < num_particles; i++){
         double x,y,theta;
         if (fabs(yaw_rate) < 0.00001) {
-            x = particles[i].x+velocity*std::cos(yaw_rate);
-            y = particles[i].y+velocity*std::sin(yaw_rate);
+            x = particles[i].x+velocity*delta_t*std::cos(particles[i].theta);
+            y = particles[i].y+velocity*delta_t*std::sin(particles[i].theta);
             theta = particles[i].theta;
         }else{ 
-            x = particles[i].x+(velocity/yaw_rate)*(std::sin(particles[i].theta+yaw_rate)-std::sin(particles[i].theta));
-            y = particles[i].y+(velocity/yaw_rate)*(std::cos(particles[i].theta+yaw_rate)-std::cos(particles[i].theta));
-            theta = particles[i].theta+yaw_rate;
+            x = particles[i].x+(velocity/yaw_rate)*(std::sin(particles[i].theta+yaw_rate*delta_t)-std::sin(particles[i].theta));
+            y = particles[i].y+(velocity/yaw_rate)*(std::cos(particles[i].theta)-std::cos(particles[i].theta+yaw_rate*delta_t));
+            theta = particles[i].theta+yaw_rate*delta_t;
         }   
         std::normal_distribution<double> dist_x(0, std_pos[0]); //the random noise cannot be negative in this case
         std::normal_distribution<double> dist_y(0, std_pos[1]); //the random noise cannot be negative in this case
