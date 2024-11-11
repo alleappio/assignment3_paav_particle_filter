@@ -88,10 +88,10 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> mapLandmark, std::
     for(int j=0; j<mapLandmark.size(); j++){
       double dist = std::hypot(mapLandmark[j].x-observations[i].x,mapLandmark[j].y-observations[i].y);
 
-        if(min_dist>dist){
-          min_dist=dist;
-          min_dist_id=mapLandmark[i].id;
-        }
+      if(dist < min_dist){
+        min_dist=dist;
+        min_dist_id=mapLandmark[i].id;
+      }
 
     }
     observations[i].id = min_dist_id;
@@ -112,7 +112,7 @@ LandmarkObs transformation(LandmarkObs observation, Particle p){
     
     global.id = observation.id;
     global.x = observation.x*std::cos(p.theta)-observation.y*std::sin(p.theta)+p.x; //TODO
-    global.x = observation.x*std::sin(p.theta)-observation.y*std::cos(p.theta)+p.y; //TODO
+    global.y = observation.x*std::sin(p.theta)+observation.y*std::cos(p.theta)+p.y; //TODO
 
     return global;
 }
