@@ -185,7 +185,6 @@ void ParticleFilter::resample() {
 																
     float max_w = *max_element(weights.begin(), weights.end());
     std::uniform_real_distribution<double> uni_dist(0.0, max_w);
-    std::uniform_real_distribution<double> uni_dist_wheel(0.0, 2*max_w);
 
     //TODO write here the resampling technique (feel free to use the above variables)
     for(int i=0; i < particles.size(); i++){
