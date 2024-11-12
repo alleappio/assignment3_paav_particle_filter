@@ -50,14 +50,17 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
     //for each particle
     for(int i=0; i < num_particles; i++){
         double x,y,theta;
-        if (fabs(yaw_rate) < 0.00001) {
-            x = particles[i].x+velocity*delta_t*std::cos(particles[i].theta);
-            y = particles[i].y+velocity*delta_t*std::sin(particles[i].theta);
-            theta = particles[i].theta;
+        double x_p = particles[i].x;
+        double y_p = particles[i].y;
+        double theta_p = particles[i].theta;
+        if (std::fabs(yaw_rate) < 0.00001) {
+            x = x_p+velocity*delta_t*std::cos(theta_p);
+            y = y_p+velocity*delta_t*std::sin(theta_p);
+            theta = theta_p;
         }else{ 
-            x = particles[i].x+(velocity/yaw_rate)*(std::sin(particles[i].theta+yaw_rate*delta_t)-std::sin(particles[i].theta));
-            y = particles[i].y+(velocity/yaw_rate)*(std::cos(particles[i].theta)-std::cos(particles[i].theta+yaw_rate*delta_t));
-            theta = particles[i].theta+yaw_rate*delta_t;
+            theta = theta_p+yaw_rate*delta_t;
+            x = x_p+(velocity/yaw_rate)*(std::sin(theta)-std::sin(theta_p));
+            y = y_p+(velocity/yaw_rate)*(std::cos(theta_p)-std::cos(theta));
         }   
         std::normal_distribution<double> dist_x(0, std_pos[0]); //the random noise cannot be negative in this case
         std::normal_distribution<double> dist_y(0, std_pos[1]); //the random noise cannot be negative in this case
@@ -87,12 +90,10 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> mapLandmark, std::
     int min_dist_id;
     for(int j=0; j<mapLandmark.size(); j++){
       double dist = std::hypot(mapLandmark[j].x-observations[i].x,mapLandmark[j].y-observations[i].y);
-
       if(dist < min_dist){
         min_dist=dist;
-        min_dist_id=mapLandmark[i].id;
+        min_dist_id=mapLandmark[j].id;
       }
-
     }
     observations[i].id = min_dist_id;
   }
@@ -140,7 +141,8 @@ void ParticleFilter::updateWeights(double std_landmark[],
         // Before applying the association we have to transform the observations in the global coordinates
         std::vector<LandmarkObs> transformed_observations;
         //TODO: for each observation transform it (transformation function)
-        transformed_observations.push_back(transformation(observations[i], particles[i]));
+        for(int j=0; j<observations.size();j++)
+          transformed_observations.push_back(transformation(observations[j], particles[i]));
         
         //TODO: perform the data association (associate the landmarks to the observations)
         dataAssociation(mapLandmark, transformed_observations);
@@ -187,11 +189,11 @@ void ParticleFilter::resample() {
     std::uniform_real_distribution<double> uni_dist(0.0, max_w);
 
     //TODO write here the resampling technique (feel free to use the above variables)
-    for(int i=0; i < particles.size(); i++){
+    for(int i=0; i < num_particles; i++){
       beta += uni_dist(generator)*2;
       while(weights[index] < beta){
         beta -= weights[index];
-        index = (index + 1) % particles.size();
+        index = (index + 1) % num_particles;
       }
       new_particles.push_back(particles[index]);
     }

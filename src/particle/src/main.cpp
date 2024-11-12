@@ -14,7 +14,7 @@
 * TODO
 * Define the proper number of particles
 */
-#define NPARTICLES 10000
+#define NPARTICLES 15000
 #define circleID "circle_id"
 #define reflectorID "reflector_id"
 
@@ -34,9 +34,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_particles(new pcl::PointCloud<pcl::Poi
 * TODO
 * Define the proper noise values
 */
-double sigma_init [3] = {0, 0, 0};  //[x,y,theta] initialization noise. 
-double sigma_pos [3]  = {0.05, 0.05, 0.05}; //[x,y,theta] movement noise. Try values between [0.5 and 0.01]
-double sigma_landmark [2] = {0.24, 0.25};     //[x,y] sensor measurement noise. Try values between [0.5 and 0.1]
+double sigma_init [3] = {0.01, 0.01, 0.01};  //[x,y,theta] initialization noise. 
+double sigma_pos [3]  = {0.15, 0.15, 0.15}; //[x,y,theta] movement noise. Try values between [0.5 and 0.01]
+double sigma_landmark [2] = {0.20, 0.20};     //[x,y] sensor measurement noise. Try values between [0.5 and 0.1]
 std::vector<Color> colors = {Color(1,0,0), Color(1,1,0), Color(0,0,1), Color(1,0,1), Color(0,1,1)};
 control_s odom;
 
