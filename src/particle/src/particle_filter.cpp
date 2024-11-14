@@ -12,7 +12,15 @@ static  std::default_random_engine gen;
 *  nParticles - number of particles
 */
 void ParticleFilter::init_random(double std[],int nParticles) {
+  num_particles = nParticles;
 
+  std::normal_distribution<double> dist_x(-std[0], std[0]); //random value between [-noise.x,+noise.x]
+  std::normal_distribution<double> dist_y(-std[1], std[1]);
+  std::normal_distribution<double> dist_theta(-std[2], std[2]);
+//TODO
+  for(int i=0; i < num_particles; i++){
+    particles.push_back(Particle(dist_x(generator), dist_y(generator), dist_theta(generator))); 
+  }
 }
 
 /*
@@ -176,27 +184,61 @@ void ParticleFilter::updateWeights(double std_landmark[],
 */
 void ParticleFilter::resample() {
     
-    std::uniform_int_distribution<int> dist_distribution(0,num_particles-1);
-    double beta  = 0.0;
-    std::vector<double> weights;
-    int index = dist_distribution(generator);
-    std::vector<Particle> new_particles;
+  std::uniform_int_distribution<int> dist_distribution(0,num_particles-1);
+  double beta  = 0.0;
+  std::vector<double> weights;
+  int index = dist_distribution(generator);
+  std::vector<Particle> new_particles;
 
-    for(int i=0;i<num_particles;i++)
-        weights.push_back(particles[i].weight);
-																
-    float max_w = *max_element(weights.begin(), weights.end());
-    std::uniform_real_distribution<double> uni_dist(0.0, max_w);
-
-    //TODO write here the resampling technique (feel free to use the above variables)
-    for(int i=0; i < num_particles; i++){
-      beta += uni_dist(generator)*2;
-      while(weights[index] < beta){
-        beta -= weights[index];
-        index = (index + 1) % num_particles;
-      }
-      new_particles.push_back(particles[index]);
+  for(int i=0;i<num_particles;i++)
+    weights.push_back(particles[i].weight);
+                              
+  float max_w = *max_element(weights.begin(), weights.end());
+  std::uniform_real_distribution<double> uni_dist(0.0, max_w);
+  std::uniform_real_distribution<double> systematic_dist(0.0, 1.0/num_particles);
+  std::vector<int> indexes;
+  //TODO write here the resampling technique (feel free to use the above variables)
+  //  WHEEL ALGORITHM
+  /*for(int i=0; i < num_particles; i++){
+    beta += uni_dist(generator)*2;
+    while(weights[index] < beta){
+      beta -= weights[index];
+      index = (index + 1) % num_particles;
     }
-    particles.swap(new_particles);
+    new_particles.push_back(particles[index]);
+  }*/
+
+  // SYSTEMATIC RESAMPLING ALGORITHM
+  double total_weights = 0.0;
+  for(int i=0; i < num_particles; i++){
+    total_weights+=weights[i];
+  }
+  std::vector<double> normalized_weights;
+  for(int i=0; i < weights.size(); i++){
+    normalized_weights.push_back(weights[i]/total_weights);
+  }
+
+  std::vector<double> cumulative_sum;
+  cumulative_sum.push_back(normalized_weights[0]);
+  for(int i=1; i < num_particles; i++){
+    cumulative_sum.push_back(cumulative_sum[i-1] + normalized_weights[i]);
+  }
+
+  double r = systematic_dist(generator);
+
+  int i=0;
+  for(int j=0; j < num_particles; j++){
+    double T = r + static_cast<double>(j)/num_particles;
+    while(T > cumulative_sum[i]){
+      i++;
+    }
+    indexes.push_back(i);
+  }
+
+  for(int i=0; i < num_particles; i++){
+    new_particles.push_back(particles[indexes[i]]);
+  }
+
+  particles.swap(new_particles);
 }
 
