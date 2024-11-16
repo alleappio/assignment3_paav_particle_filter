@@ -106,12 +106,17 @@ public:
 	 */
 	void updateWeights(double std_landmark[], std::vector<LandmarkObs> observations,
 			Map map_landmarks);
-	
+
+	std::vector<double> normalizeWeights(std::vector<double> weights);
+
 	/**
 	 * resample Resamples from the updated set of particles to form
 	 *   the new set of particles.
 	 */
 	void resample();
+
+	void wheelResample();
+	void systematicResample();
 
 	/*
 	 * Set a particles list of associations, along with the associations calculated world x,y coordinates
