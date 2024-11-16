@@ -113,7 +113,7 @@ public:
 	 * resample Resamples from the updated set of particles to form
 	 *   the new set of particles.
 	 */
-	void resample();
+	void resample(int method);
 
 	void wheelResample();
 	void systematicResample();

@@ -21,6 +21,7 @@ void ParticleFilter::init_random(double std[],int nParticles) {
   for(int i=0; i < num_particles; i++){
     particles.push_back(Particle(dist_x(generator), dist_y(generator), dist_theta(generator))); 
   }
+  is_initialized=true;
 }
 
 /*
@@ -198,8 +199,18 @@ std::vector<double> ParticleFilter::normalizeWeights(std::vector<double> weights
 * TODO
 * This function resamples the set of particles by repopulating the particles using the weight as metric
 */
-void ParticleFilter::resample() {
-  systematicResample();    
+void ParticleFilter::resample(int method) {
+  switch(method){
+    case 0:
+      wheelResample();
+      break;
+    case 1:
+      systematicResample();
+      break;
+    default:
+      wheelResample();
+      break;
+  }
 }
 
 void ParticleFilter::wheelResample(){

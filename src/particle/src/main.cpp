@@ -14,13 +14,16 @@
 * TODO
 * Define the proper number of particles
 */
-#define NPARTICLES 15000
+#define NPARTICLES 13500
 #define circleID "circle_id"
 #define reflectorID "reflector_id"
 
 using namespace std;
 using namespace lidar_obstacle_detection;
 
+
+bool init_random = true;
+int  resampling_method = 1; //0 -> wheel; 1 -> systematic
 
 Map map_mille;  
 ParticleFilter pf;
@@ -34,8 +37,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_particles(new pcl::PointCloud<pcl::Poi
 * TODO
 * Define the proper noise values
 */
-double sigma_init [3] = {0.01, 0.01, 0.01};  //[x,y,theta] initialization noise. 
-double sigma_pos [3]  = {0.17, 0.17, 0.17}; //[x,y,theta] movement noise. Try values between [0.5 and 0.01]
+double sigma_init [3] = {0.05, 0.05, 0.05};  //[x,y,theta] initialization noise. 
+double sigma_pos [3]  = {0.2, 0.2, 0.2}; //[x,y,theta] movement noise. Try values between [0.5 and 0.01]
 double sigma_landmark [2] = {0.21, 0.21};     //[x,y] sensor measurement noise. Try values between [0.5 and 0.1]
 std::vector<Color> colors = {Color(1,0,0), Color(1,1,0), Color(0,0,1), Color(1,0,1), Color(0,1,1)};
 control_s odom;
@@ -130,7 +133,7 @@ void PointCloudCb(const sensor_msgs::PointCloud2ConstPtr& cloud_msg){
     pf.updateWeights(sigma_landmark, noisy_observations, map_mille);
 
     // Resample the particles
-    pf.resample();
+    pf.resample(resampling_method);
 
     // Calculate and output the average weighted error of the particle filter over all time steps so far.
     Particle best_particle;
@@ -208,8 +211,11 @@ int main(int argc,char **argv)
     best_particles.push_back(p);
     
     // Init the particle filter
-    pf.init(GPS_x, GPS_y, GPS_theta, sigma_init, NPARTICLES);
-    //pf.init_random(sigma_init,NPARTICLES);
+    if(init_random){
+        pf.init_random(sigma_init,NPARTICLES);
+    }else{
+        pf.init(GPS_x, GPS_y, GPS_theta, sigma_init, NPARTICLES);
+    }
 
     // Render all the particles
     for(int i=0;i<NPARTICLES;i++){
