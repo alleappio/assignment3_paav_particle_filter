@@ -11,7 +11,6 @@
 #include <pcl/filters/voxel_grid.h>
 #include <particle/helper_cloud.h>
 /*
-* TODO
 * Define the proper number of particles
 */
 #define NPARTICLES 10000
@@ -34,7 +33,6 @@ std::ofstream myfile;
 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_particles(new pcl::PointCloud<pcl::PointXYZ>);
 
 /*
-* TODO
 * Define the proper noise values
 */
 double sigma_init [3] = {0.05, 0.05, 0.05};  //[x,y,theta] initialization noise. 

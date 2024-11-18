@@ -5,7 +5,6 @@
 static  std::default_random_engine gen;
 
 /*
-* TODO
 * This function initialize randomly the particles
 * Input:
 *  std - noise that might be added to the position
@@ -17,7 +16,6 @@ void ParticleFilter::init_random(double std[],int nParticles) {
   std::normal_distribution<double> dist_x(-std[0], std[0]); //random value between [-noise.x,+noise.x]
   std::normal_distribution<double> dist_y(-std[1], std[1]);
   std::normal_distribution<double> dist_theta(-std[2], std[2]);
-//TODO
   for(int i=0; i < num_particles; i++){
     particles.push_back(Particle(dist_x(generator), dist_y(generator), dist_theta(generator))); 
   }
@@ -25,7 +23,6 @@ void ParticleFilter::init_random(double std[],int nParticles) {
 }
 
 /*
-* TODO
 * This function initialize the particles using an initial guess
 * Input:
 *  x,y,theta - position and orientation
@@ -37,7 +34,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[],int nPa
   std::normal_distribution<double> dist_x(-std[0], std[0]); //random value between [-noise.x,+noise.x]
   std::normal_distribution<double> dist_y(-std[1], std[1]);
   std::normal_distribution<double> dist_theta(-std[2], std[2]);
-//TODO
   for(int i=0; i < num_particles; i++){
     particles.push_back(Particle(x+dist_x(generator), y+dist_y(generator), theta+dist_theta(generator))); 
   }
@@ -45,7 +41,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[],int nPa
 }
 
 /*
-* TODO
 * The predict phase uses the state estimate from the previous timestep to produce an estimate of the state at the current timestep
 * Input:
 *  delta_t  - time elapsed beetween measurements
@@ -74,7 +69,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
         std::normal_distribution<double> dist_x(0, std_pos[0]); //the random noise cannot be negative in this case
         std::normal_distribution<double> dist_y(0, std_pos[1]); //the random noise cannot be negative in this case
         std::normal_distribution<double> dist_theta(0, std_pos[2]); //the random noise cannot be negative in this case
-        //TODO: add the computed noise to the current particles position (x,y,theta)
+        //add the computed noise to the current particles position (x,y,theta)
         particles[i].x = x+dist_x(generator);
         particles[i].y = y+dist_y(generator);
         particles[i].theta = theta+dist_theta(generator);
@@ -83,7 +78,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 }
 
 /*
-* TODO
 * This function associates the landmarks from the MAP to the landmarks from the OBSERVATIONS
 * Input:
 *  mapLandmark   - landmarks of the map
@@ -92,8 +86,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 *  Associated observations to mapLandmarks (perform the association using the ids)
 */
 void ParticleFilter::dataAssociation(std::vector<LandmarkObs> mapLandmark, std::vector<LandmarkObs>& observations) {
-   //TODO
-   //TIP: Assign to observations[i].id the id of the landmark with the smallest euclidean distance
   for(int i=0; i<observations.size(); i++){
     double min_dist = std::numeric_limits<int>::max();
     int min_dist_id;
@@ -109,7 +101,6 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> mapLandmark, std::
 }
 
 /*
-* TODO
 * This function transform a local (vehicle) observation into a global (map) coordinates
 * Input:
 *  observation   - A single landmark observation
@@ -121,14 +112,13 @@ LandmarkObs transformation(LandmarkObs observation, Particle p){
     LandmarkObs global;
     
     global.id = observation.id;
-    global.x = observation.x*std::cos(p.theta)-observation.y*std::sin(p.theta)+p.x; //TODO
-    global.y = observation.x*std::sin(p.theta)+observation.y*std::cos(p.theta)+p.y; //TODO
+    global.x = observation.x*std::cos(p.theta)-observation.y*std::sin(p.theta)+p.x; 
+    global.y = observation.x*std::sin(p.theta)+observation.y*std::cos(p.theta)+p.y; 
 
     return global;
 }
 
 /*
-* TODO
 * This function updates the weights of each particle
 * Input:
 *  std_landmark   - Sensor noise
@@ -149,11 +139,11 @@ void ParticleFilter::updateWeights(double std_landmark[],
 
         // Before applying the association we have to transform the observations in the global coordinates
         std::vector<LandmarkObs> transformed_observations;
-        //TODO: for each observation transform it (transformation function)
+        // for each observation transform it (transformation function)
         for(int j=0; j<observations.size();j++)
           transformed_observations.push_back(transformation(observations[j], particles[i]));
         
-        //TODO: perform the data association (associate the landmarks to the observations)
+        // perform the data association (associate the landmarks to the observations)
         dataAssociation(mapLandmark, transformed_observations);
         
         particles[i].weight = 1.0;
@@ -196,7 +186,6 @@ std::vector<double> ParticleFilter::normalizeWeights(std::vector<double> weights
 }
 
 /*
-* TODO
 * This function resamples the set of particles by repopulating the particles using the weight as metric
 */
 void ParticleFilter::resample(int method) {
